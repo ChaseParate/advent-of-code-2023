@@ -9,16 +9,13 @@ fn part_one(puzzle_input: &str) -> u32 {
     puzzle_input
         .lines()
         .map(|line| {
-            let x = line.find(|c: char| c.is_digit(10)).unwrap();
-            let x2 = line.rfind(|c: char| c.is_digit(10)).unwrap();
+            let x = line.find(|c: char| c.is_ascii_digit()).unwrap();
+            let x2 = line.rfind(|c: char| c.is_ascii_digit()).unwrap();
 
             let a: Vec<char> = line.chars().collect();
             let b = a[x].to_string();
             let b2 = a[x2].to_string();
 
-            // let a = line.get(x).unwrap();
-            // let b = line.get(x2).unwrap();
-            println!("{} {}", &b, &b2);
             (b.parse::<u32>().unwrap() * 10) + b2.parse::<u32>().unwrap()
         })
         .sum()
@@ -53,15 +50,11 @@ fn part_two(puzzle_input: &str) -> u32 {
                 .max_by_key(|(_, _, idx)| idx.unwrap_or(usize::MIN))
                 .unwrap();
 
-            let left_most_digit = line.find(|c: char| c.is_digit(10));
-            let right_most_digit = line.rfind(|c: char| c.is_digit(10));
+            let left_most_digit = line.find(|c: char| c.is_ascii_digit());
+            let right_most_digit = line.rfind(|c: char| c.is_ascii_digit());
 
-            // println!("{}", line);
-            // dbg!(word_stuff_left.1, word_stuff_right.1);
-            // dbg!(left_most_digit, right_most_digit);
-
-            let first_digit = if (word_stuff_left.2.unwrap_or(usize::MAX)
-                < left_most_digit.unwrap_or(usize::MAX))
+            let first_digit = if word_stuff_left.2.unwrap_or(usize::MAX)
+                < left_most_digit.unwrap_or(usize::MAX)
             {
                 *word_stuff_left.1
             } else {
@@ -73,8 +66,8 @@ fn part_two(puzzle_input: &str) -> u32 {
                     .unwrap()
             };
 
-            let second_digit = if (word_stuff_right.2.unwrap_or(usize::MIN)
-                > right_most_digit.unwrap_or(usize::MIN))
+            let second_digit = if word_stuff_right.2.unwrap_or(usize::MIN)
+                > right_most_digit.unwrap_or(usize::MIN)
             {
                 *word_stuff_right.1
             } else {
@@ -86,7 +79,6 @@ fn part_two(puzzle_input: &str) -> u32 {
                     .unwrap()
             };
 
-            // println!("{} {}", first_digit, second_digit);
             (first_digit * 10) + second_digit
         })
         .sum()
