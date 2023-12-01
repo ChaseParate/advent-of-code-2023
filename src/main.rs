@@ -1,8 +1,12 @@
 fn main() {
     let puzzle_input = include_str!("../puzzle_input.txt");
 
-    // Part 1
-    let x: u32 = puzzle_input
+    println!("Part 1: {}", part_one(puzzle_input));
+    println!("Part 2: {}", part_two(puzzle_input));
+}
+
+fn part_one(puzzle_input: &str) -> u32 {
+    puzzle_input
         .lines()
         .map(|line| {
             let x = line.find(|c: char| c.is_digit(10)).unwrap();
@@ -17,10 +21,10 @@ fn main() {
             println!("{} {}", &b, &b2);
             (b.parse::<u32>().unwrap() * 10) + b2.parse::<u32>().unwrap()
         })
-        .sum();
-    println!("{x}");
+        .sum()
+}
 
-    // Part 2
+fn part_two(puzzle_input: &str) -> u32 {
     let nums = vec![
         ("one", 1),
         ("two", 2),
@@ -33,7 +37,7 @@ fn main() {
         ("nine", 9),
     ];
 
-    let ans: u32 = puzzle_input
+    puzzle_input
         .lines()
         .map(|line| {
             let line_chars: Vec<char> = line.chars().collect();
@@ -85,6 +89,5 @@ fn main() {
             // println!("{} {}", first_digit, second_digit);
             (first_digit * 10) + second_digit
         })
-        .sum();
-    println!("{}", ans);
+        .sum()
 }
