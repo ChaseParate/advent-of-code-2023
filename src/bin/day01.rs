@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 fn main() {
-    let puzzle_input = include_str!("../puzzle_input.txt");
+    let puzzle_input = include_str!("../../day01_puzzle_input.txt");
 
     println!("Part 1: {}", part_one(puzzle_input));
     println!("Part 2: {}", part_two(puzzle_input));
