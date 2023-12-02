@@ -1,46 +1,68 @@
+enum Color {
+    Red,
+    Green,
+    Blue,
+}
+
+struct Pull {
+    color: Color,
+    count: u32,
+}
+
+type Round = Vec<Pull>;
+type Game = (u32, Vec<Round>);
+
 fn main() {
     let puzzle_input = include_str!("../../day02_puzzle_input.txt");
 
-    println!("Part 1: {}", part_one(puzzle_input));
-    println!("Part 2: {}", part_two(puzzle_input));
+    let games: Vec<Game> = parse_puzzle_input(puzzle_input);
+
+    println!("Part 1: {}", part_one(&games));
+    println!("Part 2: {}", part_two(&games));
 }
 
-fn part_one(puzzle_input: &str) -> u32 {
-    let red = 12;
-    let green = 13;
-    let blue = 14;
-
-    let x: Vec<_> = puzzle_input
+fn parse_puzzle_input(puzzle_input: &str) -> Vec<Game> {
+    puzzle_input
         .lines()
         .map(|line| {
-            let (game_id, rules) = line.split_once(':').unwrap();
-            let (_, y) = game_id.split_once(' ').unwrap();
-            let game_id_num: u32 = y.parse().unwrap();
-            let rules_list: Vec<_> = rules
-                .split(';')
+            let (game_heading, rounds) = line.split_once(": ").unwrap();
+
+            let game_id = game_heading.split_once(' ').unwrap().1.parse().unwrap();
+
+            let rounds: Vec<_> = rounds
+                .split("; ")
                 .map(|round| {
                     round
-                        .trim()
-                        .split(',')
-                        .map(|thing| {
-                            let (x, y) = thing.trim().split_once(' ').unwrap();
-                            let num: u32 = x.parse().unwrap();
-                            (num, y)
+                        .split(", ")
+                        .map(|pull| {
+                            let (count, color) = pull.split_once(' ').unwrap();
+
+                            let count: u32 = count.parse().unwrap();
+                            let color = match color {
+                                "red" => Color::Red,
+                                "green" => Color::Green,
+                                "blue" => Color::Blue,
+                                _ => unreachable!(),
+                            };
+
+                            Pull { color, count }
                         })
-                        .collect::<Vec<_>>()
+                        .collect()
                 })
                 .collect();
 
-            (game_id_num, rules_list)
+            (game_id, rounds)
         })
-        .collect();
+        .collect()
+}
 
-    // println!("{:?}", &x[4]);
-
-    // todo!();
+fn part_one(games: &[Game]) -> u32 {
+    const RED_LIMIT: u32 = 12;
+    const GREEN_LIMIT: u32 = 13;
+    const BLUE_LIMIT: u32 = 14;
 
     let mut sum = 0;
-    for (game_id, rounds) in &x {
+    for (game_id, rounds) in games {
         let mut has_failed = false;
 
         for round in rounds {
@@ -48,20 +70,17 @@ fn part_one(puzzle_input: &str) -> u32 {
             let mut green_count = 0;
             let mut blue_count = 0;
 
-            for (num, pull_color) in round {
-                match *pull_color {
-                    "red" => red_count += num,
-                    "green" => green_count += num,
-                    "blue" => blue_count += num,
-                    _ => {
-                        panic!("invalid color {}", pull_color);
-                    }
+            for Pull { color, count } in round {
+                match color {
+                    Color::Red => red_count += count,
+                    Color::Green => green_count += count,
+                    Color::Blue => blue_count += count,
                 }
             }
 
-            if red_count > red || green_count > green || blue_count > blue {
-                // dbg!(game_id, red_count, green_count, blue_count);
+            if red_count > RED_LIMIT || green_count > GREEN_LIMIT || blue_count > BLUE_LIMIT {
                 has_failed = true;
+                break;
             }
         }
 
@@ -73,34 +92,9 @@ fn part_one(puzzle_input: &str) -> u32 {
     sum
 }
 
-fn part_two(puzzle_input: &str) -> u32 {
-    let x: Vec<_> = puzzle_input
-        .lines()
-        .map(|line| {
-            let (game_id, rules) = line.split_once(':').unwrap();
-            let (_, y) = game_id.split_once(' ').unwrap();
-            let game_id_num: u32 = y.parse().unwrap();
-            let rules_list: Vec<_> = rules
-                .split(';')
-                .map(|round| {
-                    round
-                        .trim()
-                        .split(',')
-                        .map(|thing| {
-                            let (x, y) = thing.trim().split_once(' ').unwrap();
-                            let num: u32 = x.parse().unwrap();
-                            (num, y)
-                        })
-                        .collect::<Vec<_>>()
-                })
-                .collect();
-
-            (game_id_num, rules_list)
-        })
-        .collect();
-
+fn part_two(games: &[Game]) -> u32 {
     let mut sum = 0;
-    for (game_id, rounds) in &x {
+    for (_game_id, rounds) in games {
         let mut min_reds = 0;
         let mut min_greens = 0;
         let mut min_blues = 0;
@@ -110,14 +104,11 @@ fn part_two(puzzle_input: &str) -> u32 {
             let mut green_count = 0;
             let mut blue_count = 0;
 
-            for (num, pull_color) in round {
-                match *pull_color {
-                    "red" => red_count += num,
-                    "green" => green_count += num,
-                    "blue" => blue_count += num,
-                    _ => {
-                        panic!("invalid color {}", pull_color);
-                    }
+            for Pull { color, count } in round {
+                match *color {
+                    Color::Red => red_count += count,
+                    Color::Green => green_count += count,
+                    Color::Blue => blue_count += count,
                 }
             }
 
@@ -126,7 +117,6 @@ fn part_two(puzzle_input: &str) -> u32 {
             min_blues = min_blues.max(blue_count);
         }
 
-        dbg!(min_reds, min_greens, min_blues);
         let power = min_reds * min_greens * min_blues;
         sum += power;
     }
@@ -145,8 +135,9 @@ Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
 Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
 Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
 Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green";
+        let games = parse_puzzle_input(sample_input);
 
-        assert_eq!(part_one(sample_input), 8);
+        assert_eq!(part_one(&games), 8);
     }
 
     #[test]
@@ -157,6 +148,8 @@ Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
 Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
 Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green";
 
-                assert_eq!(part_two(sample_input), 2286);
+        let games = parse_puzzle_input(sample_input);
+
+        assert_eq!(part_two(&games), 2286);
     }
 }
