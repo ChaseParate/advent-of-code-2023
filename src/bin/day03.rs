@@ -8,19 +8,21 @@ struct SpatialNumber {
 fn main() {
     let puzzle_input = include_str!("../../day03_puzzle_input.txt");
 
-    println!("Part 1: {}", part_one(puzzle_input));
-    println!("Part 2: {}", part_two(puzzle_input));
+    let (character_grid, spatial_numbers) = parse_puzzle_input(puzzle_input);
+
+    println!("Part 1: {}", part_one(&character_grid, &spatial_numbers));
+    println!("Part 2: {}", part_two(&character_grid, &spatial_numbers));
 }
 
-fn bruh_moment_gimme_a_better_name(puzzle_input: &str) -> (Vec<Vec<char>>, Vec<SpatialNumber>) {
-    let char_matrix: Vec<Vec<char>> = puzzle_input
+fn parse_puzzle_input(puzzle_input: &str) -> (Vec<Vec<char>>, Vec<SpatialNumber>) {
+    let character_grid: Vec<Vec<char>> = puzzle_input
         .lines()
         .map(|line| line.chars().collect())
         .collect();
 
     let mut spatial_numbers = Vec::new();
 
-    for (y, line) in char_matrix.iter().enumerate() {
+    for (y, line) in character_grid.iter().enumerate() {
         let mut number = 0;
         let mut length = 0;
 
@@ -50,34 +52,32 @@ fn bruh_moment_gimme_a_better_name(puzzle_input: &str) -> (Vec<Vec<char>>, Vec<S
         }
     }
 
-    (char_matrix, spatial_numbers)
+    (character_grid, spatial_numbers)
 }
 
-fn part_one(puzzle_input: &str) -> u32 {
-    let (char_matrix, spatial_numbers) = bruh_moment_gimme_a_better_name(puzzle_input);
-
+fn part_one(character_grid: &Vec<Vec<char>>, spatial_numbers: &Vec<SpatialNumber>) -> u32 {
     let mut sum = 0;
 
     'number: for SpatialNumber {
         number,
         position: (start_x, start_y),
         length,
-    } in &spatial_numbers
+    } in spatial_numbers
     {
         let start_x = *start_x as i32;
         let start_y = *start_y as i32;
 
         for y in start_y - 1..=start_y + 1 {
-            if y < 0 || y >= char_matrix.len() as i32 {
+            if y < 0 || y >= character_grid.len() as i32 {
                 continue;
             }
 
             for x in start_x - 1..=start_x + (*length as i32) {
-                if x < 0 || x >= char_matrix[y as usize].len() as i32 {
+                if x < 0 || x >= character_grid[y as usize].len() as i32 {
                     continue;
                 }
 
-                let char = char_matrix[y as usize][x as usize];
+                let char = character_grid[y as usize][x as usize];
                 if !char.is_ascii_digit() && char != '.' {
                     sum += number;
                     continue 'number;
@@ -89,11 +89,10 @@ fn part_one(puzzle_input: &str) -> u32 {
     sum
 }
 
-fn part_two(puzzle_input: &str) -> u32 {
-    let (char_matrix, spatial_numbers) = bruh_moment_gimme_a_better_name(puzzle_input);
-
+fn part_two(character_grid: &Vec<Vec<char>>, spatial_numbers: &Vec<SpatialNumber>) -> u32 {
     let mut summed_gear_ratios = 0;
-    for (star_y, row) in char_matrix.iter().enumerate() {
+
+    for (star_y, row) in character_grid.iter().enumerate() {
         for (star_x, char) in row.iter().enumerate() {
             let star_x = star_x as i32;
             let star_y = star_y as i32;
@@ -108,14 +107,14 @@ fn part_two(puzzle_input: &str) -> u32 {
                 number,
                 position: (number_x, number_y),
                 length,
-            } in &spatial_numbers
+            } in spatial_numbers
             {
                 let number_x = *number_x as i32;
                 let number_y = *number_y as i32;
 
-                if number_y >= star_y - 1
-                    && number_y <= star_y + 1
-                    && (star_x + 1) >= number_x
+                if star_y + 1 >= number_y
+                    && star_y - 1 <= number_y
+                    && star_x + 1 >= number_x
                     && star_x <= number_x + (*length as i32)
                 {
                     adjacent_part_numbers.push(number);
@@ -147,8 +146,9 @@ mod tests {
 ......755.
 ...$.*....
 .664.598..";
+        let (character_grid, spatial_numbers) = parse_puzzle_input(sample_input);
 
-        assert_eq!(part_one(sample_input), 4361);
+        assert_eq!(part_one(&character_grid, &spatial_numbers), 4361);
     }
 
     #[test]
@@ -163,7 +163,8 @@ mod tests {
 ......755.
 ...$.*....
 .664.598..";
+        let (character_grid, spatial_numbers) = parse_puzzle_input(sample_input);
 
-        assert_eq!(part_two(sample_input), 467835);
+        assert_eq!(part_two(&character_grid, &spatial_numbers), 467835);
     }
 }
